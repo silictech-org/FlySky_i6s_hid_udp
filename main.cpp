@@ -26,6 +26,9 @@
 #include <winsock2.h>
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <time.h>
+
 
 #pragma comment(lib, "ws2_32.lib") // Á´½ÓWinsock¿â
 #pragma warning(disable:4996) 
@@ -200,11 +203,16 @@ int main(int argc, char* argv[])
 			channel_value[i] = (float)channel_value[i] / 256.0 * 1000 + 1000;
 		}
 
+		auto now = std::chrono::system_clock::now();
+		auto millisec_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+		pkg.timestamp = millisec_since_epoch * 1e-3;// 1000.0f;
+		printf("time %.2f", pkg.timestamp);
 		for (int i = 0; i <= BTN_R; i++) {
 			pkg.channels[i] = channel_value[i];
 			printf("%d ", pkg.channels[i]);
 		}
 		printf("\n");
+
 
 		memcpy(buffer, &pkg, sizeof(rc_packet));
 		if(sendto(sock, buffer, sizeof(rc_packet), 0, (SOCKADDR*)&server, sizeof(server)) == SOCKET_ERROR){
